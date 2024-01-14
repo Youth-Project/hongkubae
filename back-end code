@@ -1,0 +1,130 @@
+import { firestore } from "./firebase";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCVMuvbwWUKMv5uYGKNriSsN_5842Fe_b0",
+    authDomain: "youthproject-c7e8f.firebaseapp.com",
+    projectId: "youthproject-c7e8f",
+    storageBucket: "youthproject-c7e8f.appspot.com",
+    messagingSenderId: "294892318172",
+    appId: "1:294892318172:web:4c66242c404aed74513319",
+    measurementId: "G-G4G6D8CCZZ"
+  };
+
+firebase.initialiseAPP(firebaseConfig);
+
+const DB = firebase.firestore();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+
+//이런 방식으로 레시피 컬랙션 추가 가능.
+collection('recipe').doc(recipeId).set({
+  recipeCom:'',
+  recipeDiff:'1',
+  recipeId:'1',
+  recipeName:'닭볶음탕',
+  recipeProd:['파와 청양고추는 어슷 썰고...','양파는 반을 자른후...'],
+  recipeTime:['0',30]
+});
+
+//레시피 북마크 컬렉션.
+collection('bookmark').doc(userId).set({
+  [recipeId]:true//북마크 했는지 여부(true = 북마크 추가된것)
+});
+  
+
+//레시피 부족한 재료 컬렉션.
+collection('recipeLack').doc(lack1).set({
+  lackComp:['양파','파'],
+  lakcNum:'2',
+  recipeId:'1'
+});
+
+
+//DB에서 이름 파트에서 가나다 순 정렬하는 함수, 순서대로 정렬된게 koreanOrder에 저장됨.
+async function reforderBykorean(){
+  const koreanOrder = await db.collection('recipe').orderBy('recipeName').get();
+  return koreanOrder.docs.map(doc => doc.data());
+}
+
+
+//DB이용해서 부족한 재료 갯수가 적은순으로 정렬하는 함수  ---> 솔직히 이거는 될지안될지도 몰라요, 코드 이해도 잘 못했어요;;
+async function reforderBylack(refComp){
+  const lackOrder = await db.collection('recipe').get();
+
+  const sortedrecipe = lackOrder.docs.map(function (recipeDoc) {
+    const recipeDocdata = recipeDoc.data();
+    const lack = comparelngredients(refComp,recipeDocdata.recipeComp);
+
+    return {
+      recipeId: recipeDoc.recipeId,
+      lackCount: lack.length,
+    };
+  }).sort(function (a,b){
+    return a.lackCount - b.lackCount;
+  });
+  return sortedrecipe.map(function (recipeDocdata){
+    return {
+      recipeId: recipeDocdata.recipeId,
+      lackCount: recipeDocdata.lackCount
+    };
+  });
+
+}
+
+
+//레시피 북마크 여부 토글
+async function toggleBm(userId,recipeId){
+  const bookmark = db.collection('bookmark').doc(userId);
+  const bookmarkData = await bookmark.get();
+  
+  if (bookmarkData.exists){
+    const isBookmarked = bookmarkData.data()[recipeId];
+    await bookmark.update({
+      [recipeId]:!isBookmarked,
+    });
+  }
+  else{
+    await bookmark.set({
+      [recipeId]:false,
+    });
+  }
+}
+
+
+//북마크된 레시피의 아이디 가져오는 함수
+async function getBm(userId){
+  const bookmarkData = await db.collection('bookmark').doc(userId).get();
+  const bookmarkBmid = [];
+
+  for (const id in bookmarkData.data() || {}){
+    if (bookmarkData.data()[id] = true){
+        bookmarkBmid.push(id);
+    }
+  }
+  return bookmarkBmid;
+}
+
+//레시피 추가한거 저장하는 버튼 누르면서 이 함수가 실행됨으로써 recipeCounter value가+1되서 레시피 아이디 생성하는 함수 
+let recipeCounter = 0;
+function recipeIdGenerator(){
+  recipeCounter +=1;
+  return 'recipe'+recipeCounter;
+}
+
+
+//레시피와 냉장고에있는 재료 비교하는 함수. refComp는 냉장고에있는 재료 array. recipeComp = 레시피에 필요한 재료 array.
+function compareComp(refComp,recipeComp){
+  const notInref = [];
+  for (let i=0; i<recipeComp.length; i++)
+  {
+    const component = recipeComp[i];
+
+    if (!refComp.includes(component)){
+      notInref.push(component);
+    }
+  }
+  return notInref;
+}
+
