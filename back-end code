@@ -1,4 +1,6 @@
 import { firestore } from "./firebase";
+const admin = require('firebase-admin');
+const auth = admin.auth();
 
 const firebaseConfig = {
     apiKey: "AIzaSyCVMuvbwWUKMv5uYGKNriSsN_5842Fe_b0",
@@ -12,7 +14,7 @@ const firebaseConfig = {
 
 firebase.initialiseAPP(firebaseConfig);
 
-const DB = firebase.firestore();
+const db = firebase.firestore();
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
@@ -99,7 +101,7 @@ async function getBm(userId){
   const bookmarkBmid = [];
 
   for (const id in bookmarkData.data() || {}){
-    if (bookmarkData.data()[id] = true){
+    if (bookmarkData.data()[id] === true){
         bookmarkBmid.push(id);
     }
   }
@@ -130,27 +132,70 @@ function compareComp(refComp,recipeComp){
 
 
 
-//로그인 화면
-const id = document.getElementById('id')
-const password = document.getElementById('password')
-const login = document.getElementById('login')
-let errStack = 0;
+import { authService } from "fbase";
+import React, { useState } from "react";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} 
+from "firebase/auth";
 
-login.addEventListener('click', () => {
-    if (id.value == 'acid') {
-        if (password.value == '0000') {
-            alert('로그인 되었습니다!')
-        }
-        else {
-            alert('아이디와 비밀번호를 다시 한 번 확인해주세요!')
-            errStack ++;
-        }
-    }
-    else {
-        alert('존재하지 않는 계정입니다.')
-    }
 
-    if (errStack >= 5) {
-        alert('비밀번호를 5회 이상 틀리셨습니다. 비밀번호 찾기를 권장드립니다.')
+//사용자 로그인 함수.
+const Auth = ({}) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [newAccount, setNewAccount] = useState(false);
+
+  const onChange = (event) => {
+    const {
+      target: { name, value },
+    } = event;
+    if (name === "email") {
+      setEmail(value);
+    } else if (name === "password") {
+      setPassword(value);
     }
-})
+  };
+  
+  
+  //사용자 생성 함수.
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    let data;
+    if (newAccount) {
+      createUserWithEmailAndPassword(authService, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+        });
+    } else {
+      signInWithEmailAndPassword(authService, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+        });
+    }
+  };
+  
+  
+//사용자 로그인 상태확인 함수
+const [isLoggedIn,setIsLoggedIn] = useState(false);
+ useEffect(() => {
+    authService.onAuthStateChanged((user) => {
+      if (user) {
+        setIsloggedIn(true);
+      } else {
+        setIsloggedIn(false);
+      }
+    });
+  }, []);
+
