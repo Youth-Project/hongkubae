@@ -25,7 +25,7 @@ collection('recipe').doc(recipeId).set({
   recipeId:'1',
   recipeName:'닭볶음탕',
   recipeProd:['파와 청양고추는 어슷 썰고...','양파는 반을 자른후...'],
-  recipeTime:['0',30]
+  recipeTime:[0,30]
 });
 
 //레시피 북마크 컬렉션.
