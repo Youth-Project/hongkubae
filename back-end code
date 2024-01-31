@@ -1,24 +1,14 @@
 import { firestore } from "./firebase";
-const admin = require('firebase-admin');
-const auth = admin.auth();
+import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCVMuvbwWUKMv5uYGKNriSsN_5842Fe_b0",
-    authDomain: "youthproject-c7e8f.firebaseapp.com",
-    projectId: "youthproject-c7e8f",
-    storageBucket: "youthproject-c7e8f.appspot.com",
-    messagingSenderId: "294892318172",
-    appId: "1:294892318172:web:4c66242c404aed74513319",
-    measurementId: "G-G4G6D8CCZZ"
+
   };
 
-firebase.initialiseAPP(firebaseConfig);
-
-const db = firebase.firestore();
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-
+const db = getFirestore(app);
 
 //이런 방식으로 레시피 컬랙션 추가 가능.
 collection('recipe').doc(recipeId).set({
@@ -52,12 +42,12 @@ async function reforderBykorean(){
 
 
 //DB이용해서 부족한 재료 갯수가 적은순으로 정렬하는 함수  ---> 솔직히 이거는 될지안될지도 몰라요, 코드 이해도 잘 못했어요;;
-async function reforderBylack(refComp){
+async function refrigerator_order_by_lack(refrigerator_ingredients){
   const lackOrder = await db.collection('recipe').get();
 
   const sortedrecipe = lackOrder.docs.map(function (recipeDoc) {
     const recipeDocdata = recipeDoc.data();
-    const lack = comparelngredients(refComp,recipeDocdata.recipeComp);
+    const lack = comparelngredients(refrigerator_ingredients,recipeDocdata.recipe_ingredients);
 
     return {
       recipeId: recipeDoc.recipeId,
@@ -116,14 +106,14 @@ function recipeIdGenerator(){
 }
 
 
-//레시피와 냉장고에있는 재료 비교하는 함수. refComp는 냉장고에있는 재료 array. recipeComp = 레시피에 필요한 재료 array.
-function compareComp(refComp,recipeComp){
+//레시피와 냉장고에있는 재료 비교하는 함수. refrigerator_ingredients 냉장고에있는 재료 array. recipe_ingredients = 레시피에 필요한 재료 array.
+function compareComp(refrigerator_ingredients,recipe_ingredients){
   const notInref = [];
-  for (let i=0; i<recipeComp.length; i++)
+  for (let i=0; i<recipe_ingredients.length; i++)
   {
-    const component = recipeComp[i];
+    const component = recipe_ingredients[i];
 
-    if (!refComp.includes(component)){
+    if (!refrigerator_ingredients.includes(component)){
       notInref.push(component);
     }
   }
