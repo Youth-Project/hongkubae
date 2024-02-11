@@ -1,0 +1,82 @@
+import React, {useState, useEffect} from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { NavigationContainer } from "@react-navigation/native";
+import TabNavigator from './android/app/navigations/TabNavigation';
+import LoginStackNavigator from './android/app/navigations/LoginStackNavigation';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {signIn, signUp} from './AuthFunc';
+import { Alert } from 'react-native';
+import { View, Button, Modal, Text, TouchableOpacity, StyleSheet,Dimensions, TextInput } from 'react-native';
+
+
+const App = () => {
+
+  //이메일, 비밀번호, 닉네임
+
+  const [form, setForm] = useState({
+    email:"",
+    password:"",
+    confirmPassword:""
+  });
+
+  const resultMessage = {
+    "auth/email-already-in-use":"이미 가입된 이메일임!",
+    "auth/wrong-password":"어허! 비밀번호도 모르느냐! 이런 멍청한!",
+    "auth/user-not-found":"이런이런 아이디조차 모르다니 무지하구나",
+    "auth/invalid-email":"쯧쯧 이메일못쓴다 임마!"
+  }
+
+
+  //회원가입 구현
+  const signUpSubmit = async () => {
+      const {email, password} = form;
+      const info = {email,password};
+      try {
+        const {user} = await signUp(info);
+        console.log(user);
+      } catch (error) {
+        Alert.alert("회원가입에 실패함 ㅋㅋ 수고링 ㅋㅋ");
+      }
+  }
+
+  const signInSubmit = async () => {
+    const {email, password} = form;
+    const info = {email,password};
+    try {
+      const {user} = await signIn(info);
+      console.log(user);
+    } catch (error) {
+      Alert.alert("로그인에 실패함 ㅋㅋ 바보임?");
+    }
+}
+
+  return (
+    <NavigationContainer>
+    <StatusBar style="auto" />
+    <TextInput
+      onChangeText={text => setForm({...form, email: text})}
+      value={form.email}
+      placeholder="이메일"
+    />
+    <TextInput
+      onChangeText={text => setForm({...form, password: text})}
+      value={form.password}
+      placeholder="비밀번호"
+      secureTextEntry={true}
+    />
+    <TextInput
+      onChangeText={text => setForm({...form, confirmPassword: text})}
+      value={form.confirmPassword}
+      placeholder="비밀번호 확인"
+      secureTextEntry={true}
+    />
+    <Button title="회원가입" onPress={signUpSubmit} />
+    <Button title="로그인" onPress={signInSubmit} />
+  </NavigationContainer>
+
+
+
+  );
+}
+
+export default App;
