@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
-import TabNavigator from './android/app/navigations/TabNavigation';
-import LoginStackNavigator from './android/app/navigations/LoginStackNavigation';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import { signIn, signUp } from './AuthFunc';
-import { Alert, View, Button, Modal, Text, TouchableOpacity, StyleSheet, Dimensions, TextInput } from 'react-native';
+import { Alert, View, Button, TextInput } from 'react-native';
 
-const App = () => {
+const Stack = createStackNavigator();
+
+const SignUpScreen = ({ navigation }) => {
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -36,44 +36,40 @@ const App = () => {
     }
   };
 
-  const signInSubmit = async () => {
-    try {
-      const { email, password } = form;
-      const info = { email, password };
-      const { user } = await signIn(info);
-      console.log(user);
-    } catch (error) {
-      Alert.alert('로그인에 실패함 ㅋㅋ 바보임?');
-    }
-  };
+  return (
+    <View>
+      <TextInput
+        onChangeText={(text) => setForm({ ...form, email: text })}
+        value={form.email}
+        placeholder="이메일"
+        key="email"
+      />
+      <TextInput
+        onChangeText={(text) => setForm({ ...form, password: text })}
+        value={form.password}
+        placeholder="비밀번호"
+        secureTextEntry={true}
+        key="password"
+      />
+      <TextInput
+        onChangeText={(text) => setForm({ ...form, confirmPassword: text })}
+        value={form.confirmPassword}
+        placeholder="비밀번호 확인"
+        secureTextEntry={true}
+        key="confirmPassword"
+      />
+      <Button title="회원가입" onPress={signUpSubmit} />
+    </View>
+  );
+};
 
+const App = () => {
   return (
     <NavigationContainer>
       <StatusBar style="auto" />
-      <View>
-        <TextInput
-          onChangeText={(text) => setForm({ ...form, email: text })}
-          value={form.email}
-          placeholder="이메일"
-          key="email"
-        />
-        <TextInput
-          onChangeText={(text) => setForm({ ...form, password: text })}
-          value={form.password}
-          placeholder="비밀번호"
-          secureTextEntry={true}
-          key="password"
-        />
-        <TextInput
-          onChangeText={(text) => setForm({ ...form, confirmPassword: text })}
-          value={form.confirmPassword}
-          placeholder="비밀번호 확인"
-          secureTextEntry={true}
-          key="confirmPassword"
-        />
-        <Button title="회원가입" onPress={signUpSubmit} />
-        <Button title="로그인" onPress={signInSubmit} />
-      </View>
+      <Stack.Navigator>
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 };
