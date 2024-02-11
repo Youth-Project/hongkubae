@@ -7,7 +7,7 @@ import { Alert, View, Button, TextInput } from 'react-native';
 
 const Stack = createStackNavigator();
 
-const SignUpScreen = ({ navigation }) => {
+const Loginpg = ({ navigation }) => {
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -32,46 +32,248 @@ const SignUpScreen = ({ navigation }) => {
       const { user } = await signUp(info);
       console.log(user);
     } catch (error) {
-      Alert.alert('회원가입에 실패함 ㅋㅋ 수고링 ㅋㅋ');
+      Alert.alert('회원가입에 실패함 ㅋㅋ 수고링 ㅋㅋ', error.message);
     }
   };
 
   return (
-    <View>
+    <View style={styles.container}>
+      <Text style={styles.title}>Truffle</Text>
       <TextInput
-        onChangeText={(text) => setForm({ ...form, email: text })}
+        style={styles.input}
         value={form.email}
+        onChangeText={handleEmailChange}
         placeholder="이메일"
-        key="email"
+        keyboardType="email"
       />
       <TextInput
-        onChangeText={(text) => setForm({ ...form, password: text })}
+        style={styles.input}
         value={form.password}
+        onChangeText={handlePasswordChange}
         placeholder="비밀번호"
-        secureTextEntry={true}
-        key="password"
+        keyboardType="email"
+
+secureTextEntry={true}
       />
-      <TextInput
-        onChangeText={(text) => setForm({ ...form, confirmPassword: text })}
-        value={form.confirmPassword}
-        placeholder="비밀번호 확인"
-        secureTextEntry={true}
-        key="confirmPassword"
-      />
-      <Button title="회원가입" onPress={signUpSubmit} />
+
+        {/* 비밀번호나 이메일 안맞았을떄-- 버튼누르고 체크후 띄울수 있게 어떻게하지 */}
+        <Text style={{bottom: 20, fontSize: 12,
+    color: '#ff0000', }}>{validation}</Text>
+
+
+      <TouchableOpacity
+        style={[styles.save, {backgroundColor: isPressed ? '#FEA655' : '#ccc'} ]} 
+        onPress={toggleRememberMe}> 
+        <Image style={{left: 2, top: 3}} source={require('./assets/icons/checkIcon.png')}/>
+      </TouchableOpacity>
+    <Text style={{ fontSize: 12,
+    color: '#757575', bottom: 22, right: 50 }}>로그인 정보 저장</Text>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={()=> navigation.navigate('Budgetpg')}>
+        <Text style={styles.buttonText}>로그인</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.signUp}
+        onPress={signUpSubmit}>
+        <Text style={styles.saveTxt}>회원가입</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.reset}
+        onPress={() => navigation.navigate('ForgotPW')}>
+        <Text style={styles.saveTxt}>비밀번호 재설정</Text>
+      </TouchableOpacity>
     </View>
   );
-};
+}
 
-const App = () => {
-  return (
-    <NavigationContainer>
-      <StatusBar style="auto" />
-      <Stack.Navigator>
-        <Stack.Screen name="SignUp" component={SignUpScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-};
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA', // 배경색상 추가
+  },
+  title: {
+    fontSize: 40,
+    top: 47,
+    marginBottom: 211,
+    fontFamily: 'NanumGothic',
+    color: '#000', // 글자색상 추가
+  },
 
-export default App;
+  input: {
+    fontSize: 15,
+    borderWidth: 0.5,
+    height: 28,
+    width: 232,
+    marginBottom: 30,
+    color: '#878787',
+    borderTopWidth: 0,
+    borderLeftWidth: 0,
+    borderRightWidth:0,
+  },
+  save: {
+    position: 'absolute',
+    left: 85,
+    top: 375,
+    width: 15,
+    height: 15, 
+    borderRadius: 25,
+    marginBottom: 20,
+  },
+  saveTxt: {
+    fontSize: 12,
+    color: '#757575',
+  },
+  signUp: {
+    top: 105,
+    right: 100,
+    paddingHorizontal: 100,
+  },
+  reset: {
+    top: 90,
+    left: 100,
+    paddingHorizontal: 100,
+  },
+
+  button: {
+    top: 85,
+    backgroundColor: '#FEA655',
+    paddingVertical: 10,
+    paddingHorizontal: 48,
+    borderRadius: 25,
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: 'bold',
+    fontFamily: 'NanumGothic',
+  },
+
+  //budgetpg
+  introBudget: {
+    fontSize: 20,
+    top: 149,
+    marginBottom: 211,
+    fontFamily: 'NanumGothic',
+    color: '#000', // 글자색상 추가
+  },
+  subTitle: {
+    color: '#727272',
+    bottom: 45,
+  },
+    back: {
+    top: 42,
+    right: 163,
+  },
+  backBTN: {
+    fontSize: 25,
+  },
+
+  //signuppg
+  topTitle: {
+    fontSize: 24,
+    top: 12,
+  },
+  log: {
+    top: 193,
+
+  },
+  inputS: {
+    fontSize: 15,
+    borderWidth: 0.5,
+    height: 28,
+    width: 232,
+    top: 130,
+    marginBottom: 40,
+    color: '#878787',
+    borderTopWidth: 0,
+    borderLeftWidth: 0,
+    borderRightWidth:0,
+  },
+  buttonS: {
+    top: 183,
+    backgroundColor: '#FEA655',
+    paddingVertical: 10,
+    paddingHorizontal: 48,
+    borderRadius: 25,
+    marginBottom: 20,
+  },
+  
+  //success
+  center: {
+    fontSize: 20,
+    top: 20,
+    marginBottom: 55,
+    textAlign: 'center',
+  },
+
+  //forgotPW
+  inputP: {
+    fontSize: 15,
+    borderWidth: 0.5,
+    height: 28,
+    width: 232,
+    top: 80,
+    marginBottom: 40,
+    color: '#878787',
+    borderTopWidth: 0,
+    borderLeftWidth: 0,
+    borderRightWidth:0,
+  },
+  buttonP: {
+    top: 93,
+    backgroundColor: '#FEA655',
+    paddingVertical: 10,
+    paddingHorizontal: 48,
+    borderRadius: 25,
+  },
+  midButton: {
+    right: 48,
+    top: 64,
+    backgroundColor: '#FEA655',
+    paddingVertical: 10,
+    paddingHorizontal: 23,
+    borderRadius: 25,
+  },
+  resend: {
+    top: 33,
+    left: 75,
+  },
+  inputRe: {
+    fontSize: 15,
+    borderWidth: 0.5,
+    height: 28,
+    width: 160,
+    top: 82,
+    right: 35,
+    marginBottom: 10,
+    color: '#878787',
+    borderTopWidth: 0,
+    borderLeftWidth: 0,
+    borderRightWidth:0,
+  },
+  smallButton: {
+    left: 85,
+    top: 36,
+    backgroundColor: '#FEA655',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 25,
+  },
+  passwordContent: {
+    top: 50,
+    fontSize: 12,
+    color: '#ff0000',
+  },
+  errTxt: {
+    top: 100,
+    fontSize: 12,
+    color: '#ff0000',
+  },
+});
+
+
+export default Loginpg;
