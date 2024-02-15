@@ -1,38 +1,105 @@
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { signIn, signUp } from './AuthFunc';
-import { Alert, View, Button, TextInput } from 'react-native';
+import { signIn } from './AuthFunc';
+import React, { useState, useEffect } from 'react';
+import {
+  NavigationContainer,
+  Text,
+  Image,
+  View,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet, 
+} from 'react-native';
 
-const Stack = createStackNavigator();
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Loginpg = ({ navigation }) => {
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
+//import { onSubmit } from './authFunctions';
+import { authService } from './firebaseConfig';
 
-  const resultMessage = {
-    'auth/email-already-in-use': '이미 가입된 이메일임!',
-    'auth/wrong-password': '어허! 비밀번호도 모르느냐! 이런 멍청한!',
-    'auth/user-not-found': '이런이런 아이디조차 모르다니 무지하구나',
-    'auth/invalid-email': '쯧쯧 이메일못쓴다 임마!'
+
+function Loginpg({ navigation }) {
+const [password, setPassword] = useState('');
+const [email, setEmail] = useState('');
+const [validation, setValidation] = useState("");
+
+const handlePasswordChange = (value) => {
+    setPassword(value);
+  };
+  const handleEmailChange = (val) => {
+    setEmail(val);
   };
 
-  const signUpSubmit = async () => {
+
+{/* 로그인 정보 저장 async storage */}
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    // Load stored email and password when the component mounts
+    loadLoginInfo();
+  }, []);
+
+  const loadLoginInfo = async () => {
     try {
-      const { email, password, confirmPassword } = form;
-      if (password !== confirmPassword) {
-        Alert.alert('비밀번호와 비밀번호 확인이 일치하지 않습니다.');
-        return;
+      const storedEmail = await AsyncStorage.getItem('storedEmail');
+      const storedPassword = await AsyncStorage.getItem('storedPassword');
+
+      if (storedEmail && storedPassword) {
+        setEmail(storedEmail);
+        setPassword(storedPassword);
+        setRememberMe(true);
       }
-      const info = { email, password };
-      const { user } = await signUp(info);
-      console.log(user);
     } catch (error) {
-      Alert.alert('회원가입에 실패함 ㅋㅋ 수고링 ㅋㅋ', error.message);
+      console.error('Error loading login information:', error);
+    }
+  };
+  const handleSignIn = async () => {
+    try {
+      await signIn({ email, password });
+      navigation.navigate('Budgetpg');
+    } catch (error) {
+      setError('이메일 또는 비밀번호가 잘못되었습니다.');
+      console.error('로그인 실패:', error);
+    }
+  };
+
+
+{/* 로그인정보 버튼 */}
+   const [isPressed, setIsPressed] = useState(false);
+
+  const toggleRememberMe = () => {
+    setIsPressed((prevIsRed) => !prevIsRed);
+    if(isPressed){
+      setRememberMe(!rememberMe);
+    }
+    
+  };
+
+
+
+
+
+{/* const getLogInfo = async () => {
+  const email = await AsyncStorage.getItem('email');
+  const password = await AsyncStorage.getItem('password');
+}
+const saveLogInfo = async () => {
+  await AsyncStorage.setItem('email', JSON.stringify(email));
+  await AsyncStorage.setItem('password', JSON.stringify(password));
+} */}
+
+
+{/* 수정됨 */}
+const onSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      if (rememberMe) {
+        {/* 로그인 정보 저장 */}
+        await AsyncStorage.setItem('storedEmail', email);
+        await AsyncStorage.setItem('storedPassword', password);
+      }
+      {/* 로그인 */}
+        await authService.signInWithEmailAndPassword(email, password);
+    } catch (error) {
+      setValidation('일치하는 이메일 혹은 비밀번호가 없습니다.', error);
     }
   };
 
@@ -41,47 +108,43 @@ const Loginpg = ({ navigation }) => {
       <Text style={styles.title}>Truffle</Text>
       <TextInput
         style={styles.input}
-        value={form.email}
+        val={email}
         onChangeText={handleEmailChange}
         placeholder="이메일"
         keyboardType="email"
       />
       <TextInput
         style={styles.input}
-        value={form.password}
+        value={password}
         onChangeText={handlePasswordChange}
         placeholder="비밀번호"
         keyboardType="email"
-
-secureTextEntry={true}
       />
 
         {/* 비밀번호나 이메일 안맞았을떄-- 버튼누르고 체크후 띄울수 있게 어떻게하지 */}
         <Text style={{bottom: 20, fontSize: 12,
     color: '#ff0000', }}>{validation}</Text>
 
-
       <TouchableOpacity
         style={[styles.save, {backgroundColor: isPressed ? '#FEA655' : '#ccc'} ]} 
         onPress={toggleRememberMe}> 
-        <Image style={{left: 2, top: 3}} source={require('./assets/icons/checkIcon.png')}/>
       </TouchableOpacity>
     <Text style={{ fontSize: 12,
-    color: '#757575', bottom: 22, right: 50 }}>로그인 정보 저장</Text>
+    color: '#757575', bottom: 23, right: 50 }}>로그인 정보 저장</Text>
 
       <TouchableOpacity
         style={styles.button}
-        onPress={()=> navigation.navigate('Budgetpg')}>
+        onPress={handleSignIn}>
         <Text style={styles.buttonText}>로그인</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.signUp}
-        onPress={signUpSubmit}>
+        onPress={() => navigation.navigate('SignUp')}>
         <Text style={styles.saveTxt}>회원가입</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.reset}
-        onPress={() => navigation.navigate('ForgotPW')}>
+        onPress={() => navigation.ForgotPW()}>
         <Text style={styles.saveTxt}>비밀번호 재설정</Text>
       </TouchableOpacity>
     </View>
@@ -114,13 +177,10 @@ const styles = StyleSheet.create({
     borderRightWidth:0,
   },
   save: {
-    position: 'absolute',
-    left: 85,
-    top: 375,
-    width: 15,
-    height: 15, 
-    borderRadius: 25,
-    marginBottom: 20,
+    flexDirection: 'row', 
+    justifyContent: 'space-evenly',
+    bottom: 15,
+    right: 45,
   },
   saveTxt: {
     fontSize: 12,
@@ -274,6 +334,4 @@ const styles = StyleSheet.create({
     color: '#ff0000',
   },
 });
-
-
-export default Loginpg;
+  export default Loginpg;
