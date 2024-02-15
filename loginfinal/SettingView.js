@@ -35,6 +35,23 @@ const SettingsView = ({navigation}) => {
     }
   };
 
+  const handleWithdraw = async () => {
+    const userId = 'aBsXiwzPUnVsFAH7dLBtmkum1383';
+    try {
+        await firestore().collection('users').doc(userId).delete();
+        console.log("사용자 문서가 삭제되었습니다.");
+
+      const user = auth().currentUser;
+      if (user) {
+        user.delete();
+        console.log('사용자가 성공적으로 삭제되었습니다.');
+    } else {
+      console.log('현재 로그인한 사용자가 없습니다.')
+    }}catch (error) {
+      console.error("사용자 탈퇴 중 오류가 발생했습니다:", error);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchBudget();
@@ -147,7 +164,7 @@ const SettingsView = ({navigation}) => {
             <View style={Styles.ModalOpen}>
              <WithdrawModal/>
              <View style={Styles.ModalBTN}>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={handleWithdraw}>
                   <YesBTN/>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={withdrawVisModal}>
