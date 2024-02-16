@@ -24,7 +24,6 @@ const BookmarkTab = ({ navigation }) => {
         const userBookmarkData = snapshot.data();
         const userBookmarked = userBookmarkData.user_bookmark.join(',');
         const userBookmarkStr = userBookmarked.split(',');
-        console.log(userBookmarkStr);
 
     let fetchedRecipes = [];
     for (const docName of userBookmarkStr) {
@@ -39,8 +38,6 @@ const BookmarkTab = ({ navigation }) => {
           time: recipeData.recipe_time,
         };
         fetchedRecipes.push(recipeContents);
-        console.log(recipeData.recipe_name);
-        console.log(recipeData.recipe_time);
       } else {
         console.warn(`레시피 문서 "${docName}"을(를) 찾을 수 없습니다.`);
       }
