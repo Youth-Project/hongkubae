@@ -2,40 +2,32 @@ import React, { useState, useEffect, } from 'react';
 import { View, Text, TouchableOpacity , StyleSheet, TextInput, FlatList, ScrollView,Switch,Image} from 'react-native';
 import firestore from "@react-native-firebase/firestore";
 
-const RecipeTab = ( {navigation} ) => {
- // const [showUserRecipes, setShowUserRecipes] = useState(false);
+const RecipeTab = () => {
+  const [showUserRecipes, setShowUserRecipes] = useState(false);
   const [recipeData, setRecipeData] = useState([]);
- // const [refrigeratorIngredients, setRefrigeratorIngredients] = useState([]);
-//  const [bookmarkedRecipes, setBookmarkedRecipes] = useState([]);
+  const [refrigeratorIngredients, setRefrigeratorIngredients] = useState([]);
+  const [bookmarkedRecipes, setBookmarkedRecipes] = useState([]);
 
   useEffect(() => {
-
-    const userId = 'xxvkRzKqFcWLVx4hWCM8GgQf1hE3';
-    fetchRecipeData(userId);
+    fetchRecipeData();
 //    fetchBookmarkedRecipes();
   }, []);
 
-/*const handleToggleSwitch = () => {
+const handleToggleSwitch = () => {
   setShowUserRecipes((prev) => !prev);
-};*/
+};
 
-const fetchRecipeData = async(userId) => {
+const fetchRecipeData = async() => {
+
   try {
     const userId = 'xxvkRzKqFcWLVx4hWCM8GgQf1hE3';
-    const userBookmarkStr = ["1", "2", "3","4", "5", "6","7", "8", "9","10",
-    "11", "12", "13","14", "15", "16","17", "18", "19","20",
-    "21", "22", "23","24", "25", "26","27", "28", "29","30",
-    "31", "32", "33","34", "35", "36","37", "38", "39","40",
-    "41", "42", "43","44", "45", "46","47", "48", "49","50",
-    "51", "52", "53","54", "55", "56","57", "58", "59","60",
-    "61", "62", "63","64", "65", "66","67", "68", "69","70",
-    "71", "72", "73","74", "75", "76","77", "78", "79","80",
-    "81", "82", "83","84", "85", "86","87", "88", "89","90",
-    "91", "92", "93","94", "95", "96","97", "98", "99","100"];
-    let fetchedRecipes = [];
-    for (const docName of userBookmarkStr) {
+    const fetchedRecipes = [];
+
+    for (let i = 1; i <= 100; i++) {
+      const docName = i.toString();
       const recipeRef = firestore().collection('recipes').doc(docName);
       const recipeSnapshot = await recipeRef.get();
+
       if (recipeSnapshot.exists) {
         const recipeData = recipeSnapshot.data();
         const recipeContents = {
@@ -45,6 +37,8 @@ const fetchRecipeData = async(userId) => {
           time: recipeData.recipe_time,
         };
         fetchedRecipes.push(recipeContents);
+        console.log(recipeData.recipe_name);
+        console.log(recipeData.recipe_time);
       } else {
         console.warn(`레시피 문서 "${docName}"을(를) 찾을 수 없습니다.`);
       }
@@ -57,7 +51,7 @@ const fetchRecipeData = async(userId) => {
   }
 };
 
-/*const displayLackingIngredients = async (recipeId, recipeIngredients) => {
+const displayLackingIngredients = async (recipeId, recipeIngredients) => {
   const lackingIngredients = compareIngredients(refrigeratorIngredients, recipeIngredients);
   if (lackingIngredients.length > 0){
     try{
@@ -68,7 +62,7 @@ const fetchRecipeData = async(userId) => {
     }
   }
   return lackingIngredients.join(', ');
-};*/
+};
   
 /*const handleSortOrder = async (orderType) => {
   switch (orderType) {
@@ -85,31 +79,59 @@ const fetchRecipeData = async(userId) => {
   }
 };*/
 
-return (
-  <ScrollView style={styles.container}>
-    <View>
-      {/* Display your bookmarked recipes here */}
-      {recipeData.map((recipe) => (
-        <TouchableOpacity
-          key={recipe.id}
-          style={styles.post}
-          onPress={() => navigation.navigate('RecipeDetail', { recipeId: recipe.id })}>
-          <Image source={{ uri: recipe.image }} style={{ width: 118, height: 66, left: 12, top: 11, borderRadius: 7 }} />
-          <Text style={styles.foodText}>{recipe.name}</Text>
-          <View style={{ left: 12, top: 15 }}>
-          </View>
-          <Text style={styles.timeText}>
-            {recipe.time[0] !== 0 && `${recipe.time[0]} 시간 `}
-            {recipe.time[1] !== 0 && `${recipe.time[1]} 분`}
-          </Text>
+  return (
+    <View style={styles.container}>
+      <ScrollView style={styles.containerScroll}>
+        <View style={styles.row}>
+          {/* Recipe list */}
+          {recipeData.map((recipe) => (
+            <TouchableOpacity
+              key={recipe.id}
+              style={styles.post}
+              onPress={() => console.log('Navigate to Recipe Detail:', recipe.id)}>
+              <Image source={{ uri: recipe.image }}
+                style={{ width: 118, height: 66, left: 12, top: 11, borderRadius: 7 }}
+              />
+              <Text style={styles.foodText}>{recipe.name}</Text>
+              <View style={{ left: 12, top: 15 }}>
+              </View>
+              <Text style={styles.timeText}>
+              {recipe.time[0] !== 0 && `${recipe.time[0]} 시간 `}
+              {recipe.time[1] !== 0 && `${recipe.time[1]} 분`}
+            </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    
+      {/* Filtering and Sorting Controls */}
+      <View style={styles.controls}>
+        <View style={styles.filterSwitchContainer}>
+          <Text>Show User Recipes</Text>
+          <Switch
+            trackColor={{ false: "#767577", true: "#81b0ff" }}
+            thumbColor={showUserRecipes ? "#f5dd4b" : "#f4f3f4"}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={handleToggleSwitch}
+            value={showUserRecipes}
+          />
+        </View>
+        <TouchableOpacity style={styles.addButton} onPress={fetchRecipeData}>
+          <Text style={styles.addButtonText}>Add Recipe</Text>
         </TouchableOpacity>
-        ))}
+        <View style={styles.sortButtons}>
+          <TouchableOpacity style={styles.sortButton} onPress={() => handleSortOrder('korean')}>
+            <Text>Sort by Korean</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.sortButton} onPress={() => handleSortOrder('lack')}>
+            <Text>Sort by Lack</Text>
+          </TouchableOpacity>
+          {/* Add more sorting buttons as needed */}
+        </View>
       </View>
-    </ScrollView>
+    </View>
   );
 };
-
-
 
 const styles = StyleSheet.create({
     container: {
