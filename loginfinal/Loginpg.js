@@ -9,7 +9,7 @@ import {
   StyleSheet, Email
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import Eye from "../assets/icons/Eye";
+//import Eye from "../assets/icons/Eye";
 
 
 function Loginpg({ navigation }) {
@@ -109,13 +109,13 @@ const [eye, setEye] = useState({
     if (eye[buttonName]) {
       switch (buttonName) {
         case 'eyeOpen':
-          return require('../assets/icons/Eye');
+          return require('./assets/icons/eyeOn.png');
         default:
-          return require('../assets/icons/Eye');
+          return require('./assets/icons/eye.png');
       }
     } 
     else{
-      return require('../assets/icons/Eye');
+      return require('./assets/icons/eye.png');
     }
   };
 
@@ -155,7 +155,7 @@ secureTextEntry={isSecure}
       <TouchableOpacity
         style={[styles.save, {backgroundColor: isPressed ? '#FEA655' : '#ccc'} ]} 
         onPress={toggleRememberMe}> 
-        <Image style={{left: 2, top: 3}} source={require('../assets/icons/checkIcon.png')}/>
+        <Image style={{left: 2, top: 3}} source={require('./assets/icons/checkIcon.png')}/>
       </TouchableOpacity>
     <Text style={{ fontSize: 12,
     color: '#757575', bottom: 22, right: 50 }}>로그인 정보 저장</Text>
