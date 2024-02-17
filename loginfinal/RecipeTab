@@ -17,6 +17,34 @@ const handleToggleSwitch = () => {
   setShowUserRecipes((prev) => !prev);
 };
 
+const orderByKorean = async () => {
+  const koreanOrder = await firestore().collection('recipe').orderBy('recipeName').get();
+  return koreanOrder.docs.map((doc) => doc.data());
+};
+
+// 부족한 재료 갯수가 적은 순으로 정렬하는 함수
+const refrigeratorOrderByLack = async (refrigeratorIngredients) => {
+  const lackOrder = await firestore().collection('recipe').get();
+
+  const sortedRecipe = lackOrder.docs
+    .map((recipeDoc) => {
+      const recipeDocData = recipeDoc.data();
+      const lack = compareIngredients(refrigeratorIngredients, recipeDocData.recipe_ingredients);
+
+      return {
+        recipeId: recipeDoc.recipeId,
+        lackCount: lack.length,
+      };
+    })
+    .sort((a, b) => a.lackCount - b.lackCount);
+
+  return sortedRecipe.map((recipeDocData) => ({
+    recipeId: recipeDocData.recipeId,
+    lackCount: recipeDocData.lackCount,
+  }));
+};
+
+
 const fetchRecipeData = async() => {
 
   try {
@@ -64,7 +92,7 @@ const displayLackingIngredients = async (recipeId, recipeIngredients) => {
   return lackingIngredients.join(', ');
 };
   
-/*const handleSortOrder = async (orderType) => {
+const handleSortOrder = async (orderType) => {
   switch (orderType) {
     case 'korean':
       const koreanOrder = await orderByKorean();
@@ -77,7 +105,7 @@ const displayLackingIngredients = async (recipeId, recipeIngredients) => {
     default:
       break;
   }
-};*/
+};
 
   return (
     <View style={styles.container}>
@@ -127,11 +155,40 @@ const displayLackingIngredients = async (recipeId, recipeIngredients) => {
             <Text>Sort by Lack</Text>
           </TouchableOpacity>
           {/* Add more sorting buttons as needed */}
+      </View>
+    </View>
+
+
+
+      {/* Filtering and Sorting Controls */}
+      <View style={styles.controls}>
+        <View style={styles.filterSwitchContainer}>
+          <Text>Show User Recipes</Text>
+          <Switch
+            trackColor={{ false: "#767577", true: "#81b0ff" }}
+            thumbColor={showUserRecipes ? "#f5dd4b" : "#f4f3f4"}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={handleToggleSwitch}
+            value={showUserRecipes}
+          />
+        </View>
+        <TouchableOpacity style={styles.addButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.addButtonText}>Add Recipe</Text> 
+        </TouchableOpacity>
+        <View style={styles.sortButtons}>
+          <TouchableOpacity style={styles.sortButton} onPress={() => handleSortOrder('korean')}>
+            <Text>Sort by Korean</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.sortButton} onPress={() => handleSortOrder('lack')}>
+            <Text>Sort by Lack</Text>
+          </TouchableOpacity>
+          {/* Add more sorting buttons as needed */}
         </View>
       </View>
     </View>
-  );
+  )
 };
+
 
 const styles = StyleSheet.create({
     container: {
